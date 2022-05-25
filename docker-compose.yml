@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+
+  db:
+    image: postgres:10
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./volumes/postgres:/var/lib/postgresql/data:delegated
+    env_file:
+      - backend/env/db.env
+
+  web:
+    command: bash -c "./manage.py migrate &&while :; do exec ./manage.py runserver 0.0.0.0:8000; done;"
+    image: "web"
+    build: backend
+    volumes:
+      - ./backend:/code:cached
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - backend/env/db.env
+      - backend/env/web.env
