@@ -22,20 +22,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", "SDFS53453FS")
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
-DEBUG = os.getenv("DEBUG", "1")
+DEBUG = os.getenv("DEBUG", "").lower() == "true"
 
 # Application definition
 
-INSTALLED_APPS = [
+CORE_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+]
+
+THIRD_PARTY_APPS = [
+    # тут будут с установленных пакетов типа DRF
+]
+
+LOCAL_APPS = [
     'user',
     'innotter',
 ]
+
+INSTALLED_APPS = CORE_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -73,11 +82,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": os.getenv("ENGINE_DB", "django.db.backends.postgresql_psycopg2"),
         "NAME": os.getenv("POSTGRES_DB", "innotter_db"),
         "USER": os.getenv("POSTGRES_USER", "postgres"),
         "PASSWORD": os.getenv("POSTGRES_PASSWORD", "03072002"),
-        "HOST": os.getenv("POSTGRES_HOST", "localhost"),
+        "HOST": os.getenv("POSTGRES_HOST", "db"),
         "PORT": os.getenv("POSTGRES_PORT", "5432"),
     }
 }

@@ -11,5 +11,8 @@ class User(AbstractUser):
     title = models.CharField(max_length=80)
     is_blocked = models.BooleanField(default=False)
 
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ('username',)
     USERNAME_FIELD = 'email'
+
+    def __str__(self):
+        return self.email
