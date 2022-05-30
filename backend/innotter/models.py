@@ -22,6 +22,7 @@ class Page(models.Model):
     is_private = models.BooleanField(default=False)
     follow_requests = models.ManyToManyField('user.User', related_name='requests')
 
+    is_blocked = models.BooleanField(default=False)
     unblock_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -33,6 +34,7 @@ class Post(models.Model):
     content = models.CharField(max_length=180)
 
     reply_to = models.ForeignKey('Post', on_delete=models.SET_NULL, null=True, related_name='replies')
+    is_liked = models.ManyToManyField('user.User', related_name='likes', null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
