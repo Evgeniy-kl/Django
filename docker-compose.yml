@@ -12,7 +12,7 @@ services:
       - backend/env/db.env
 
   web:
-    command: bash -c "./manage.py migrate &&while :; do exec ./manage.py runserver 0.0.0.0:8000; done;"
+    command: bash -c "./manage.py migrate && ./manage.py collectstatic --noinput && while :; do exec ./manage.py runserver 0.0.0.0:8000; done;"
     image: "web"
     build: backend
     volumes:

@@ -101,16 +101,14 @@ AUTH_USER_MODEL = 'user.User'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
 REST_FRAMEWORK = {
-
     'DEFAULT_AUTHENTICATION_CLASSES': (
-
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=6000),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=99999),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
@@ -156,9 +154,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-
-# Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'

@@ -18,7 +18,7 @@ from innotter.api.serializers import (
     PostListSerializer,
     FollowRequestSerializer,
 )
-from user.models import User
+from innotter.services import FollowService, LikeService
 
 
 class TagViewSet(viewsets.GenericViewSet,
@@ -36,97 +36,78 @@ class PageViewSet(mixins.ListModelMixin,
                   mixins.UpdateModelMixin,
                   mixins.RetrieveModelMixin,
                   mixins.DestroyModelMixin,
-                  viewsets.GenericViewSet):
+                  viewsets.GenericViewSet, ):
     serializers = {'list': PageListSerializer,
                    'retrieve': PageListSerializer,
                    'create': PageSerializer,
-                   'permanent_blocking': PagePermanentBlockSerializer,
-                   'temporary_blocking': PageTemporaryBlockSerializer,
+                   'permanent_block': PagePermanentBlockSerializer,
+                   'temporary_block': PageTemporaryBlockSerializer,
                    'follow_requests': FollowRequestSerializer}
-    queryset = Page.objects.prefetch_related(
+    queryset = Page.active_pages.prefetch_related(
         'tags',
         'followers',
         'follow_requests',
     ).select_related(
         'owner'
-    ).filter(
-        Q(is_blocked=False),
-        Q(
-            Q(unblock_date__lte=datetime.datetime.now()) |
-            Q(unblock_date=None)
-        )
     ).all()
     serializer_class = PageSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         return self.serializers.get(self.action, self.serializer_class)
 
-    def get_permissions(self):
-        if self.action in ['permanent_blocking', 'destroy']:
-            self.permission_classes = [IsAdmin, ]
-        if self.action in ['temporary_blocking', ]:
-            self.permission_classes = [IsModerator, IsAdmin]
-
-        return super(self.__class__, self).get_permissions()
-
-    @action(methods=['POST', 'GET'], detail=True)
-    def permanent_blocking(self, request, **kwargs):
+    @action(methods=['PATCH'], detail=True)
+    def permanent_block(self, request, **kwargs):
         return super().partial_update(request, **kwargs)
 
-    @action(methods=['POST', 'GET'], detail=True)
-    def temporary_blocking(self, request, **kwargs):
+    @action(methods=['PATCH'], detail=True)
+    def temporary_block(self, request, **kwargs):
         return super().partial_update(request, **kwargs)
 
-    @action(methods=['POST', 'GET'], detail=True)
+    @action(methods=['POST'], detail=True)
     def follow_requests_decline_all(self, request, pk=None):
-        page = Page.objects.get(pk=pk)
-        user = User.objects.get(email=request.user.email)
-        if page.owner == user:
-            page.follow_requests.clear()
-            page.save()
-            return Response({'Decline all follow requests'})
-        else:
-            return Response({'Smth wrong'})
-
-    @action(methods=['POST', 'GET'], detail=True)
-    def follow_requests_accept_all(self, request, pk=None):
-        user = User.objects.get(email=request.user.email)
-        page = Page.objects.get(pk=pk)
-        if page.owner == user:
-            for follow_req in page.follow_requests.all():
-                page.followers.add(follow_req)
-                page.follow_requests.remove(follow_req)
-            page.save()
-            return Response({'Accept all follow requests'})
-        else:
-            return Response({'Smth wrong'})
-
-    @action(methods=['GET'], detail=True)
-    def follow(self, request, pk=None):
-        page = Page.objects.get(pk=pk)
-        user = User.objects.get(email=request.user.email)
-        if page.is_private:
-            page.follow_requests.add(user)
-            page.save()
-            return Response({'Follow request sent'})
-        else:
-            page.followers.add(user)
-            page.save()
-            return Response({'Followed'})
-
-    @action(methods=['GET'], detail=True)
-    def unfollow(self, request, pk=None):
-        page = Page.objects.get(pk=pk)
-        user = User.objects.get(email=request.user.email)
+        initiate_follow_service = FollowService()
         try:
-            page.follow_requests.remove(user)
-            page.followers.remove(user)
-            page.save()
+            initiate_follow_service.decline_all_followers(self.get_object(), request.user)
+            return Response('Decline all follow requests')
         except MethodNotAllowed:
-            return Response({'Smth wrong'})
+            return Response('Smth wrong')
 
-        return Response({'Unfollowed'})
+    @action(methods=['POST'], detail=True)
+    def follow_requests_accept_all(self, request, pk=None):
+        initiate_follow_service = FollowService()
+        try:
+            initiate_follow_service.decline_all_followers(self.get_object(), request.user)
+            return Response('Accept all follow requests')
+        except MethodNotAllowed:
+            return Response('Smth wrong')
+
+    @action(methods=['POST'], detail=True)
+    def follow(self, request, pk=None):
+        initiate_follow_service = FollowService()
+        try:
+            initiate_follow_service.follow(self.get_object(), request.user)
+            return Response('Followed')
+        except MethodNotAllowed:
+            return Response('Smth wrong')
+
+    @action(methods=['POST'], detail=True)
+    def unfollow(self, request, pk=None):
+        initiate_follow_service = FollowService()
+        try:
+            initiate_follow_service.unfollow(self.get_object(), request.user)
+            return Response('Unfollowed')
+        except MethodNotAllowed:
+            return Response('Smth wrong')
+
+    @action(methods=['GET'], detail=False)
+    def my_pages(self, request):
+        initiate_follow_service = FollowService()
+        try:
+            pages = initiate_follow_service.my_pages(request.user)
+            return Response(pages)
+        except MethodNotAllowed:
+            return Response('Smth wrong')
 
 
 class PostViewSet(viewsets.GenericViewSet,
@@ -134,7 +115,7 @@ class PostViewSet(viewsets.GenericViewSet,
                   mixins.CreateModelMixin,
                   mixins.UpdateModelMixin,
                   mixins.RetrieveModelMixin,
-                  mixins.DestroyModelMixin):
+                  mixins.DestroyModelMixin, ):
     queryset = Post.objects.select_related(
         'page',
         'reply_to',
@@ -146,24 +127,20 @@ class PostViewSet(viewsets.GenericViewSet,
     def get_serializer_class(self):
         return self.serializers.get(self.action, self.serializer_class)
 
-    def get_permissions(self):
-        if self.action in ['destroy']:
-            self.permission_classes = [IsAdmin, IsModerator]
-
-        return super(self.__class__, self).get_permissions()
-
-    @action(methods=['POST', 'GET'], detail=True)
+    @action(methods=['POST'], detail=True)
     def like(self, request, pk=None):
-        post = Post.objects.get(pk=pk)
-        user = User.objects.get(email=request.user.email)
-        post.is_liked.add(user)
-        post.save()
-        return Response({'Liked'})
+        initiate_like_service = LikeService()
+        try:
+            initiate_like_service.like(self.get_object(), request.user)
+            return Response('Liked')
+        except MethodNotAllowed:
+            return Response('Smth wrong')
 
-    @action(methods=['POST', 'GET'], detail=True)
+    @action(methods=['POST'], detail=True)
     def unlike(self, request, pk=None):
-        post = Post.objects.get(pk=pk)
-        user = User.objects.get(email=request.user.email)
-        post.is_liked.remove(user)
-        post.save()
-        return Response({'Unliked'})
+        initiate_like_service = LikeService()
+        try:
+            initiate_like_service.unlike(self.get_object(), request.user)
+            return Response('Unliked')
+        except MethodNotAllowed:
+            return Response('Smth wrong')
