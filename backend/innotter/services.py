@@ -33,7 +33,7 @@ class FollowService:
 
     @staticmethod
     def my_pages(user):
-        return {'my_pages': user.pages.values_list()}
+        return {'my_pages': user.pages.values_list('name', flat=True)}
 
 
 class LikeService:
