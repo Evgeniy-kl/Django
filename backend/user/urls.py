@@ -3,13 +3,13 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from user.api.v1.views import UserViewSet
+from user.views import UserViewSet
 from django.urls import path
 
 
 router = routers.SimpleRouter()
 
-router.register('registration', UserViewSet, basename='registration')
+router.register('user', UserViewSet, basename='user')
 
 urlpatterns = [
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

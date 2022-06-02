@@ -19,8 +19,7 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/innotter/', include('innotter.api.v1.urls')),
-    path('api/v1/user/', include('user.api.v1.urls')),
+    path('api/', include('api.urls'))
 
 ]
 

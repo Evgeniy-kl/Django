@@ -5,19 +5,32 @@ from innotter.models import Tag, Page, Post
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('name', )
+        fields = (
+            'name',
+        )
 
 
 class PageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
-        exclude = ('is_blocked', 'unblock_date', 'followers', 'follow_requests', )
+        exclude = (
+            'is_blocked',
+            'unblock_date',
+            'followers',
+            'follow_requests',
+        )
 
 
 class PageRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
-        fields = ('name', 'uuid', 'description', 'tags', 'is_private', )
+        fields = (
+            'name',
+            'uuid',
+            'description',
+            'tags',
+            'is_private',
+        )
 
 
 class PageListSerializer(serializers.ModelSerializer):
@@ -28,8 +41,19 @@ class PageListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Page
-        fields = ('name', 'uuid', 'description', 'tags', 'owner', 'followers',
-                  'image', 'is_private', 'follow_requests', 'is_blocked', 'unblock_date', )
+        fields = (
+            'name',
+            'uuid',
+            'description',
+            'tags',
+            'owner',
+            'followers',
+            'image',
+            'is_private',
+            'follow_requests',
+            'is_blocked',
+            'unblock_date',
+        )
 
 
 class PostListSerializer(serializers.ModelSerializer):
@@ -38,28 +62,44 @@ class PostListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ('page', 'content', 'reply_to', 'liked_by', )
+        fields = (
+            'page',
+            'content',
+            'reply_to',
+            'liked_by',
+        )
 
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ('page', 'content', 'reply_to', 'liked_by', )
+        fields = (
+            'page',
+            'content',
+            'reply_to',
+            'liked_by',
+        )
 
 
 class PagePermanentBlockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
-        fields = ('is_blocked', )
+        fields = (
+            'is_blocked',
+        )
 
 
 class PageTemporaryBlockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
-        fields = ('unblock_date', )
+        fields = (
+            'unblock_date',
+        )
 
 
 class FollowRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
-        fields = ('follow_requests', )
+        fields = (
+            'follow_requests',
+        )

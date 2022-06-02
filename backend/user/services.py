@@ -1,10 +1,7 @@
 from user.models import User
-import json
 
 
 class UserService:
-    def show_liked_posts(self, user: User):
-        posts = []
-        for post in user.likes.all():
-            posts.append(post.content)
-        return {'liked_posts': posts}
+    @staticmethod
+    def show_liked_posts(user: User):
+        return {'liked_posts': user.likes.values_list()}

@@ -1,6 +1,6 @@
 from rest_framework import routers
 
-from innotter.api.v1.views import TagViewSet, PageViewSet, PostViewSet
+from innotter.views import TagViewSet, PageViewSet, PostViewSet
 
 router = routers.SimpleRouter()
 
