@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from innotter.models import Tag, Page, Post
 from innotter.services import ValidateFileFormat
-from rest_framework.exceptions import ValidationError
+
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
