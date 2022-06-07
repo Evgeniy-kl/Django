@@ -1,6 +1,17 @@
 from innotter.models import Page, Post
 
 
+class ValidateFileFormat:
+    @staticmethod
+    def is_valid_file(file_name: str):
+        valid_formats = ['png', 'jpg', 'jpeg']
+        file_format = file_name.split('.')[-1]
+        if file_format in valid_formats:
+            return True
+        else:
+            return False
+
+
 class FollowService:
     @staticmethod
     def decline_all_followers(page: Page, user):
