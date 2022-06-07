@@ -18,18 +18,24 @@ class FollowService:
 
     @staticmethod
     def follow(page: Page, user):
+        if page.owner == user:
+            return 'You are owner!'
         if page.is_private:
             page.follow_requests.add(user)
             page.save()
         else:
             page.followers.add(user)
             page.save()
+        return 'Followed'
 
     @staticmethod
     def unfollow(page: Page, user):
+        if page.owner == user:
+            return 'You are owner!'
         page.follow_requests.remove(user)
         page.followers.remove(user)
         page.save()
+        return 'Unfollowed'
 
     @staticmethod
     def my_pages(user):
