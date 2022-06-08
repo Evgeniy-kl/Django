@@ -2,7 +2,6 @@ from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from innotter.tasks import send_mail_to
 from innotter.models import Tag, Page, Post
 from innotter.serializers import (
     PageSerializer,
@@ -48,7 +47,7 @@ class PageViewSet(mixins.ListModelMixin,
     ).all()
     serializer_class = PageSerializer
 
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
         return self.serializers.get(self.action, self.serializer_class)
