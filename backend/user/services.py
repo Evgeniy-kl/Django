@@ -1,14 +1,12 @@
+from django.db.models import Q
 from user.models import User
+from innotter.models import Post
 
 
 class BlockService:
     @staticmethod
     def block_all_pages(user: User, request):
-        pages = user.pages
-        print(pages.values_list('uuid'))
-        for page in pages.all():
-            page.is_blocked = bool(request.data['is_blocked'])
-            page.save()
+        user.pages.update(is_blocked=bool(request.data['is_blocked']))
 
 
 class UserService:
@@ -18,11 +16,8 @@ class UserService:
 
     @staticmethod
     def dashboard(user: User):
-        # pages
-        followed_pages = user.follows.all()
-        my_pages = user.pages.all()
-        # posts
-        my_posts = my_pages.values_list('posts', flat=True)
-        followed_posts = followed_pages.values_list('posts', flat=True)
-        dashboard_posts = my_posts | followed_posts
-        return {'dashboard': dashboard_posts}
+        dashboard_posts = Post.objects.filter(
+            Q(page__owner=user) |
+            Q(page__followers=user)
+        ).all()
+        return {'dashboard': dashboard_posts.values_list('id', flat=True)}
