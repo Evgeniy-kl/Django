@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+
+  db:
+    image: postgres:10
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./volumes/postgres:/var/lib/postgresql/data:delegated
+    env_file:
+      - backend/env/db.env
+
+  web:
+    image: "web"
+    build: backend
+    volumes:
+      - ./backend:/code:cached
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - rabbitmq3
+      - celery_worker
+    env_file:
+      - backend/env/db.env
+      - backend/env/web.env
+
+
+  rabbitmq3:
+    container_name: "rabbitmq"
+    image: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  celery_worker:
+    build: backend
+    command: celery -A innotter worker -l INFO
+    ports: [ ]
+    depends_on:
+      - rabbitmq3
+      - db
