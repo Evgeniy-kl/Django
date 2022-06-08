@@ -1,4 +1,6 @@
-from innotter.models import Page, Post
+from innotter.models import Post
+from innotter.models import Page
+from innotter.tasks import send_mail_to
 
 
 class ValidateFileFormat:
@@ -51,6 +53,12 @@ class FollowService:
     @staticmethod
     def my_pages(user):
         return {'my_pages': user.pages.values_list('name', flat=True)}
+
+    @staticmethod
+    def notification_to_subscribers(page: int):
+        page_to_send = Page.objects.get(pk=page)
+        for follower in page_to_send.followers.all():
+            send_mail_to('New post', 'New post by {}'.format(page_to_send.name), follower.email)
 
 
 class LikeService:

@@ -3,7 +3,6 @@ from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from innotter.models import Tag, Page, Post
 from innotter.serializers import (
     PageSerializer,
@@ -106,6 +105,10 @@ class PostViewSet(viewsets.GenericViewSet,
 
     def get_serializer_class(self):
         return self.serializers.get(self.action, self.serializer_class)
+
+    def perform_create(self, serializer):
+        serializer.save()
+        FollowService.notification_to_subscribers(serializer.data['page'])
 
     @action(methods=('POST',), detail=True)
     def like(self, request, pk=None):
