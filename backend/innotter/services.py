@@ -3,6 +3,17 @@ from innotter.models import Page
 from innotter.tasks import send_mail_to
 
 
+class ValidateFileFormat:
+    @staticmethod
+    def is_valid_file(file_name: str):
+        valid_formats = ['png', 'jpg', 'jpeg']
+        file_format = file_name.split('.')[-1]
+        if file_format in valid_formats:
+            return True
+        else:
+            return False
+
+
 class FollowService:
     @staticmethod
     def decline_all_followers(page: Page, user):
@@ -20,18 +31,24 @@ class FollowService:
 
     @staticmethod
     def follow(page: Page, user):
+        if page.owner == user:
+            return 'You are owner!'
         if page.is_private:
             page.follow_requests.add(user)
             page.save()
         else:
             page.followers.add(user)
             page.save()
+        return 'Followed'
 
     @staticmethod
     def unfollow(page: Page, user):
+        if page.owner == user:
+            return 'You are owner!'
         page.follow_requests.remove(user)
         page.followers.remove(user)
         page.save()
+        return 'Unfollowed'
 
     @staticmethod
     def my_pages(user):

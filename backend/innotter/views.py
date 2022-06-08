@@ -1,3 +1,4 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -45,6 +46,8 @@ class PageViewSet(mixins.ListModelMixin,
     ).select_related(
         'owner'
     ).all()
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('name', 'uuid', 'tags__name', 'owner__username',)
     serializer_class = PageSerializer
 
     permission_classes = (IsAuthenticated,)
@@ -72,13 +75,13 @@ class PageViewSet(mixins.ListModelMixin,
 
     @action(methods=('POST',), detail=True)
     def follow(self, request, pk=None):
-        FollowService.follow(self.get_object(), request.user)
-        return Response('Followed')
+        res = FollowService.follow(self.get_object(), request.user)
+        return Response(res)
 
     @action(methods=('POST',), detail=True)
     def unfollow(self, request, pk=None):
-        FollowService.unfollow(self.get_object(), request.user)
-        return Response('Unfollowed')
+        res = FollowService.unfollow(self.get_object(), request.user)
+        return Response(res)
 
     @action(methods=('GET',), detail=False)
     def my_pages(self, request):

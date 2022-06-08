@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from innotter.models import Tag, Page, Post
+from innotter.services import ValidateFileFormat
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -19,6 +20,16 @@ class PageSerializer(serializers.ModelSerializer):
             'followers',
             'follow_requests',
         )
+
+    def create(self, validated_data):
+        image = validated_data.pop('image')
+        tags = validated_data.pop('tags')
+        if not ValidateFileFormat.is_valid_file(image):
+            raise serializers.ValidationError("Not Valid file format!")
+        page = Page(**validated_data)
+        page.image = image
+        page.save()
+        return page
 
 
 class PageRetrieveSerializer(serializers.ModelSerializer):
