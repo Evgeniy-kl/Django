@@ -1,6 +1,7 @@
 from innotter.models import Post
 from innotter.models import Page
 from innotter.tasks import send_mail_to
+from innotter.producer import pusblish
 
 
 class ValidateFileFormat:
@@ -38,6 +39,8 @@ class FollowService:
             page.save()
         else:
             page.followers.add(user)
+            ###
+            pusblish({'user': str(user), 'method': 'qty_followers'})
             page.save()
         return 'Followed'
 
@@ -65,6 +68,8 @@ class LikeService:
     @staticmethod
     def like(post: Post, user):
         post.liked_by.add(user)
+        ###
+        pusblish({'user': str(user), 'method': 'qty_likes'})
         post.save()
 
     @staticmethod

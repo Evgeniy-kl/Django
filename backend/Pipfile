@@ -12,6 +12,8 @@ djangorestframework-simplejwt = "*"
 django-filter = "*"
 celery = "*"
 python-dotenv = "*"
+pika = "*"
+requests = "*"
 
 [dev-packages]
 

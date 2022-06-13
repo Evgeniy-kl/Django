@@ -4,6 +4,7 @@ services:
 
   db:
     image: postgres:10
+    container_name: postgresql_db
     ports:
       - "5432:5432"
     volumes:
@@ -13,6 +14,7 @@ services:
 
   web:
     image: "web"
+    container_name: django-web
     build: backend
     volumes:
       - ./backend:/code:cached
@@ -23,12 +25,11 @@ services:
       - rabbitmq3
       - celery_worker
     env_file:
-      - backend/env/db.env
       - backend/env/web.env
 
 
   rabbitmq3:
-    container_name: "rabbitmq"
+    container_name: rabbitmq
     image: rabbitmq
     ports:
       - "5672:5672"
@@ -36,8 +37,15 @@ services:
 
   celery_worker:
     build: backend
+    container_name: celery_worker
     command: celery -A innotter worker -l INFO
     ports: [ ]
     depends_on:
       - rabbitmq3
       - db
+
+  queue:
+    container_name: django_queue
+    restart: always
+    build: backend
+    entrypoint: 'python innotter/consumer.py'
