@@ -1,16 +1,16 @@
-import pika, json
+import json
+
+from innotter.services import RabbitManage
 
 
 def pusblish(body):
-    credentials = pika.PlainCredentials('nzocntbp', 'bLDWuRiZsMh96jL2d0yCAiMvvWtBvpTr')
-    parameters = pika.ConnectionParameters('moose.rmq.cloudamqp.com',
-                                           5672,
-                                           'nzocntbp',
-                                           credentials)
+    rabbit_obj = RabbitManage('moose.rmq.cloudamqp.com',
+                              5672,
+                              'nzocntbp',
+                              'nzocntbp',
+                              'bLDWuRiZsMh96jL2d0yCAiMvvWtBvpTr')
 
-    connection = pika.BlockingConnection(parameters)
-
-    channel = connection.channel()
+    channel = rabbit_obj.connect()
 
     channel.exchange_declare('django_exchange')
     channel.queue_declare(queue='django_queue')
@@ -21,5 +21,5 @@ def pusblish(body):
         routing_key='tests',
     )
     channel.close()
-    connection.close()
+
     print('Message sent')
