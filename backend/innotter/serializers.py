@@ -74,6 +74,7 @@ class PostListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = (
+            'id',
             'page',
             'content',
             'reply_to',
