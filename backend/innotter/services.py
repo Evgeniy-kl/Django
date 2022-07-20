@@ -1,7 +1,8 @@
 from innotter.models import Post
 from innotter.models import Page
 from innotter.tasks import send_mail_to
-
+from innotter.producer import pusblish
+import pika
 
 class ValidateFileFormat:
     @staticmethod
@@ -38,6 +39,8 @@ class FollowService:
             page.save()
         else:
             page.followers.add(user)
+            ###
+            pusblish({'user': str(user), 'method': 'qty_followers'})
             page.save()
         return 'Followed'
 
@@ -65,9 +68,32 @@ class LikeService:
     @staticmethod
     def like(post: Post, user):
         post.liked_by.add(user)
+        ###
+        pusblish({'user': str(user), 'method': 'qty_likes'})
         post.save()
 
     @staticmethod
     def unlike(post: Post, user):
         post.liked_by.remove(user)
         post.save()
+
+
+class RabbitManage:
+
+    def __init__(self, host, port: int, virtualhost, username, password):
+        self.host = host
+        self.port = port
+        self.virtualhost = virtualhost
+        self.username = username
+        self.password = password
+
+    def connect(self):
+        creds = pika.PlainCredentials(self.username, self.password)
+        params = pika.ConnectionParameters(self.host,
+                                           self.port,
+                                           self.virtualhost,
+                                           creds)
+
+        connection = pika.BlockingConnection(params)
+
+        return connection.channel()

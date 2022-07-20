@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -14,7 +14,8 @@ from innotter.serializers import (
     PostListSerializer,
     FollowRequestSerializer,
 )
-from innotter.services import FollowService, LikeService
+from innotter.services import FollowService, LikeService, StatisticService
+from innotter.producer import pusblish
 
 
 class TagViewSet(viewsets.GenericViewSet,
@@ -50,7 +51,7 @@ class PageViewSet(mixins.ListModelMixin,
     filterset_fields = ('name', 'uuid', 'tags__name', 'owner__username',)
     serializer_class = PageSerializer
 
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
         return self.serializers.get(self.action, self.serializer_class)
@@ -106,6 +107,15 @@ class PostViewSet(viewsets.GenericViewSet,
     def get_serializer_class(self):
         return self.serializers.get(self.action, self.serializer_class)
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        ###
+        pusblish({'user': str(request.user), 'method': 'qty_posts'})
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     def perform_create(self, serializer):
         serializer.save()
         FollowService.notification_to_subscribers(serializer.data['page'])
@@ -119,3 +129,4 @@ class PostViewSet(viewsets.GenericViewSet,
     def unlike(self, request, pk=None):
         LikeService.unlike(self.get_object(), request.user)
         return Response('Unliked')
+

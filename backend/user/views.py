@@ -1,6 +1,7 @@
 from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
 from user.models import User
 from user.serializers import UserSerializer, UserBlockSerializer
 from user.services import UserService, BlockService
@@ -31,5 +32,4 @@ class UserViewSet(viewsets.GenericViewSet,
     @action(methods=('GET',), detail=False)
     def dashboard(self, request):
         result = UserService.dashboard(user=request.user)
-
         return Response(result)
